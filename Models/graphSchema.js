@@ -4,6 +4,7 @@ const bcrypt = require("bcrypt");
 const createManager = require("../Controllers/createManager");
 const { manager, player, team } = require("../Models/mongooseSchema");
 let login = require("../Controllers/login");
+let transfer = require("../Controllers/transfer");
 
 const {
   GraphQLObjectType,
@@ -12,7 +13,6 @@ const {
   GraphQLInt,
   GraphQLID,
   GraphQLList,
-  GraphQLBoolean,
 } = graphql;
 
 const ManagerType = new GraphQLObjectType({
@@ -35,7 +35,7 @@ const PlayerType = new GraphQLObjectType({
     lastName: { type: GraphQLString },
     position: { type: GraphQLString },
     age: { type: GraphQLInt },
-    team: { type: GraphQLString },
+    Team: { type: GraphQLString },
     Country: { type: GraphQLString },
     marketValue: { type: GraphQLInt },
     transfer_Status: { type: GraphQLString },
@@ -200,6 +200,23 @@ const Mutation = new GraphQLObjectType({
               "Access denied, you can only modify your team members"
             );
           }
+        } else {
+          throw new Error(`Access denied. You must login first`);
+        }
+      },
+    },
+    Transfer: {
+      type: GraphQLString,
+      args: {
+        id: { type: GraphQLID },
+        Price: { type: graphql.GraphQLFloat },
+      },
+      resolve: async (roots, args, context) => {
+        let userID = context.user;
+        let res = context.res;
+        if (userID) {
+          console.log("Transfer");
+          return transfer(res, userID, args.id);
         } else {
           throw new Error(`Access denied. You must login first`);
         }
